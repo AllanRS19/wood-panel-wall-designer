@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  OPERATOR
+}
+
+enum JobStatus {
+  DRAFT
+  UPLOADED
+  ARRANGING
+  PROOFING
+  APPROVED
+  PRINTED
+  SHIPPED
+}
+
+enum PaperSize {
+  A4
+  LETTER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+  jobs         Job[]
+}
+
+model Job {
+  id           String    @id @default(cuid())
+  title        String
+  wallWidthMm  Float
+  wallHeightMm Float
+  paperSize    PaperSize @default(A4)
+  status       JobStatus @default(DRAFT)
+  customerId   String
+  customer     User      @relation(fields: [customerId], references: [id])
+  photos       Photo[]
+  panels       Panel[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Photo {
+  id           String   @id @default(cuid())
+  jobId        String
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  s3Key        String
+  originalName String
+  mimeType     String
+  widthPx      Int?
+  heightPx     Int?
+  createdAt    DateTime @default(now())
+  panels       Panel[]
+}
+
+model Panel {
+  id           String     @id @default(cuid())
+  jobId        String
+  job          Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  photoId      String
+  photo        Photo      @relation(fields: [photoId], references: [id])
+  canvasSizeId String
+  canvasSize   CanvasSize @relation(fields: [canvasSizeId], references: [id])
+  xMm          Float // left edge from wall left
+  yMm          Float // top edge from wall top
+  rotation     Int        @default(0) // 0, 90, 180, 270
+  label        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model CanvasSize {
+  id          String         @id @default(cuid())
+  name        String
+  widthMm     Float
+  heightMm    Float
+  thicknessMm Float          @default(18)
+  priceCents  Int            @default(0)
+  active      Boolean        @default(true)
+  holes       HolePosition[]
+  panels      Panel[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model HolePosition {
+  id           String     @id @default(cuid())
+  canvasSizeId String
+  canvasSize   CanvasSize @relation(fields: [canvasSizeId], references: [id], onDelete: Cascade)
+  xMm          Float // from panel top-left
+  yMm          Float // from panel top-left
+  label        String     @default("Hanging point")
+  createdAt    DateTime   @default(now())
+}
