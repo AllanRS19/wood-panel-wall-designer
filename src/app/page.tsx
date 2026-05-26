@@ -6,7 +6,6 @@ const Home = async () => {
 
     const session = await getServerSession(authOptions);
     
-    console.log(session);
     if (session) {
         if (session.user?.role === 'OPERATOR') redirect('/operator/pipeline');
         else redirect('/dashboard');
