@@ -37,11 +37,6 @@ const JobActions = ({ jobId, isDraft, isProofing, isApprovedOrLater, canSubmit }
         router.refresh(); // re-runs the server component fetch
     };
 
-    const downloadPdf = (type: 'template' | 'reference') => {
-        console.log('Clicked on the button');
-        window.open(`/api/jobs/${jobId}/pdf?type=${type}`, '_blank');
-    };
-
     return (
         <div className="flex items-center gap-2 flex-wrap">
             {isDraft && (
@@ -51,10 +46,10 @@ const JobActions = ({ jobId, isDraft, isProofing, isApprovedOrLater, canSubmit }
             )}
             {(isProofing || isApprovedOrLater) && (
                 <>
-                    <Button size="sm" variant="outline" onClick={() => downloadPdf('template')}>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`/api/jobs/${jobId}/pdf?type=template`, '_blank')}>
                         ⬇ Hanging Template PDF
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => downloadPdf('reference')}>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`/api/jobs/${jobId}/pdf?type=reference`, '_blank')}>
                         ⬇ Reference Sheet PDF
                     </Button>
                 </>
