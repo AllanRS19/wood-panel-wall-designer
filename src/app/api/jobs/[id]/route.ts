@@ -29,12 +29,12 @@ async function getJobOrForbid(id: string, userId: string, role: string) {
     return job;
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
 
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const job = await getJobOrForbid(id, session.user.id, session.user.role);
     if (!job) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -50,11 +50,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ ...job, photos: photosWithUrls });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const job = await getJobOrForbid(id, session.user.id, session.user.role);
     if (!job) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -70,11 +70,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json(updated);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const job = await getJobOrForbid(id, session.user.id, session.user.role);
     if (!job) return NextResponse.json({ error: 'Not found' }, { status: 404 });

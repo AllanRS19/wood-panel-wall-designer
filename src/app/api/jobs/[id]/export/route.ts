@@ -6,13 +6,13 @@ import { buildPrintMasterZip } from '@/lib/zipExport';
 import { getPresignedGetUrl } from '@/lib/s3';
 import { defaultHoles } from '@/lib/geometry';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== 'OPERATOR') {
         return NextResponse.json({ error: 'Operator access required' }, { status: 403 });
     }
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const job = await prisma.job.findUnique({
         where: { id },

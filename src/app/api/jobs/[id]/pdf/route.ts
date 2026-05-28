@@ -44,11 +44,11 @@ async function buildPdfJob(jobId: string, userId: string, role: string): Promise
     };
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'template'; // 'template' | 'reference'

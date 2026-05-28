@@ -13,11 +13,11 @@ async function checkJobAccess(jobId: string, userId: string, role: string) {
 }
 
 // GET — list panels for a job
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const { job, error } = await checkJobAccess(id, session.user.id, session.user.role);
     if (!job) return NextResponse.json({ error }, { status: 404 });
@@ -35,11 +35,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // POST — create or bulk-replace panels (bulk: send { panels: [...] })
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const { job, error } = await checkJobAccess(id, session.user.id, session.user.role);
     if (!job) return NextResponse.json({ error }, { status: 404 });
@@ -134,11 +134,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 }
 
 // PUT — update a single panel (pass panelId in body)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const { job, error } = await checkJobAccess(id, session.user.id, session.user.role);
     if (!job) return NextResponse.json({ error }, { status: 404 });
@@ -166,11 +166,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE — delete a panel (pass panelId in body)
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const { job, error } = await checkJobAccess(id, session.user.id, session.user.role);
     if (!job) return NextResponse.json({ error }, { status: 404 });

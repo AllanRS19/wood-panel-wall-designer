@@ -10,11 +10,11 @@ function opOnly(session: Awaited<ReturnType<typeof getServerSession>>) {
 }
 
 // GET — list holes for a canvas size
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const holes = await prisma.holePosition.findMany({
         where: { canvasSizeId: id },
@@ -24,12 +24,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // POST — add a hole
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     const deny = opOnly(session);
     if (deny) return deny;
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const size = await prisma.canvasSize.findUnique({ where: { id } });
     if (!size) return NextResponse.json({ error: 'Canvas size not found' }, { status: 404 });
@@ -59,12 +59,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 }
 
 // PUT — update a hole (holeId in body)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     const deny = opOnly(session);
     if (deny) return deny;
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const size = await prisma.canvasSize.findUnique({ where: { id } });
     if (!size) return NextResponse.json({ error: 'Canvas size not found' }, { status: 404 });
@@ -99,12 +99,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE — remove a hole (holeId in body)
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const session = await getServerSession(authOptions);
     const deny = opOnly(session);
     if (deny) return deny;
 
-    const id = (await params).id;
+    const { id } = await params;
 
     const { holeId } = await req.json();
     await prisma.holePosition.deleteMany({
