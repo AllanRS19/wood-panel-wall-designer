@@ -242,18 +242,32 @@ async function buildTemplatePage(
     // Draw panels that intersect this tile
     // ---------------------------------------------------------------------------
     for (const panel of job.panels) {
-        const { displayW, displayH } = panelDisplaySize(panel.widthMm, panel.heightMm, panel.rotation);
-        const pRect = { x: panel.xMm, y: panel.yMm, w: displayW, h: displayH };
-        const tRect = { x: tileOriginX, y: tileOriginY, w: tileW, h: tileH };
-        if (!rectIntersects(pRect, tRect)) continue;
+        const { displayW, displayH } = panelDisplaySize(
+            panel.widthMm, panel.heightMm, panel.rotation
+        );
 
-        // Panel corners in PDF space
-        const tl = toPt(panel.xMm, panel.yMm);
-        const br = toPt(panel.xMm + displayW, panel.yMm + displayH);
+        // Skip panels that don't intersect this tile at all
+        if (!rectIntersects(
+            { x: panel.xMm, y: panel.yMm, w: displayW, h: displayH },
+            { x: tileOriginX, y: tileOriginY, w: tileW, h: tileH }
+        )) continue;
+
+        // Clip the panel rectangle to the tile content area.
+        // This prevents overflow when a panel spans multiple tiles.
+        // When the customer tapes tiles together along the crop marks,
+        // the clipped halves join into the complete panel outline.
+        const visX1 = Math.max(panel.xMm, tileOriginX);
+        const visY1 = Math.max(panel.yMm, tileOriginY);
+        const visX2 = Math.min(panel.xMm + displayW, tileEndX);
+        const visY2 = Math.min(panel.yMm + displayH, tileEndY);
+
+        const tl = toPt(visX1, visY1);
+        const br = toPt(visX2, visY2);
         const pw = br.x - tl.x;
-        const ph = tl.y - br.y; // y is flipped in PDF
+        const ph = tl.y - br.y;
 
-        // Fill + outline
+        if (pw <= 0 || ph <= 0) continue;
+
         page.drawRectangle({
             x: tl.x, y: br.y, width: pw, height: ph,
             color: COL_PANEL_FILL,
@@ -261,44 +275,36 @@ async function buildTemplatePage(
             borderWidth: 1.2,
         });
 
-        // Panel label (top-left of panel, inside)
-        const labelX = Math.max(tl.x + mmToPt(2), mmToPt(margin));
-        const labelY = Math.min(tl.y - mmToPt(7), pageH - mmToPt(margin) - 8);
-        if (labelY > mmToPt(margin) && labelX < mmToPt(p.widthMm - margin)) {
+        // Panel label — only on the tile that contains the panel's top-left corner
+        if (panel.xMm >= tileOriginX && panel.xMm < tileEndX &&
+            panel.yMm >= tileOriginY && panel.yMm < tileEndY) {
             page.drawText(panel.label || `Panel ${panel.id.slice(-4)}`, {
-                x: labelX, y: labelY,
-                size: 7, font: fontReg,
-                color: COL_PANEL_OUTLINE,
+                x: tl.x + mmToPt(2),
+                y: tl.y - mmToPt(7),
+                size: 7, font: fontReg, color: COL_PANEL_OUTLINE,
             });
         }
 
-        // Draw holes
-        const holeList = panel.holes.length > 0 ? panel.holes : defaultHoles(panel.widthMm);
+        // Hole markers — only draw holes that fall within this tile
+        const holeList = panel.holes.length > 0
+            ? panel.holes
+            : defaultHoles(panel.widthMm);
+
         const wallHoles = transformAllHoles({
-            panelX: panel.xMm,
-            panelY: panel.yMm,
-            panelW: panel.widthMm,
-            panelH: panel.heightMm,
-            rotation: panel.rotation,
-            holes: holeList,
+            panelX: panel.xMm, panelY: panel.yMm,
+            panelW: panel.widthMm, panelH: panel.heightMm,
+            rotation: panel.rotation, holes: holeList,
         });
 
         for (const wh of wallHoles) {
-            if (!pointInRect({ x: wh.wallX, y: wh.wallY }, tRect)) continue;
+            if (!pointInRect(
+                { x: wh.wallX, y: wh.wallY },
+                { x: tileOriginX, y: tileOriginY, w: tileW, h: tileH }
+            )) continue;
+
             const hp = toPt(wh.wallX, wh.wallY);
             drawCross(page, hp.x, hp.y, mmToPt(HOLE_CROSS_SIZE_MM), COL_HOLE_CROSS);
 
-            // Small circle around the cross
-            page.drawCircle({
-                x: hp.x, y: hp.y,
-                size: mmToPt(HOLE_CROSS_SIZE_MM + 1),
-                borderColor: COL_HOLE_CROSS, borderWidth: 0.5,
-                color: rgb(1, 1, 1),
-                opacity: 0,
-                borderOpacity: 0.7,
-            });
-
-            // Hole label
             if (wh.label) {
                 page.drawText(wh.label, {
                     x: hp.x + mmToPt(5), y: hp.y - mmToPt(2),
@@ -307,6 +313,72 @@ async function buildTemplatePage(
             }
         }
     }
+    // for (const panel of job.panels) {
+    //     const { displayW, displayH } = panelDisplaySize(panel.widthMm, panel.heightMm, panel.rotation);
+    //     const pRect = { x: panel.xMm, y: panel.yMm, w: displayW, h: displayH };
+    //     const tRect = { x: tileOriginX, y: tileOriginY, w: tileW, h: tileH };
+    //     if (!rectIntersects(pRect, tRect)) continue;
+
+    //     // Panel corners in PDF space
+    //     const tl = toPt(panel.xMm, panel.yMm);
+    //     const br = toPt(panel.xMm + displayW, panel.yMm + displayH);
+    //     const pw = br.x - tl.x;
+    //     const ph = tl.y - br.y; // y is flipped in PDF
+
+    //     // Fill + outline
+    //     page.drawRectangle({
+    //         x: tl.x, y: br.y, width: pw, height: ph,
+    //         color: COL_PANEL_FILL,
+    //         borderColor: COL_PANEL_OUTLINE,
+    //         borderWidth: 1.2,
+    //     });
+
+    //     // Panel label (top-left of panel, inside)
+    //     const labelX = Math.max(tl.x + mmToPt(2), mmToPt(margin));
+    //     const labelY = Math.min(tl.y - mmToPt(7), pageH - mmToPt(margin) - 8);
+    //     if (labelY > mmToPt(margin) && labelX < mmToPt(p.widthMm - margin)) {
+    //         page.drawText(panel.label || `Panel ${panel.id.slice(-4)}`, {
+    //             x: labelX, y: labelY,
+    //             size: 7, font: fontReg,
+    //             color: COL_PANEL_OUTLINE,
+    //         });
+    //     }
+
+    //     // Draw holes
+    //     const holeList = panel.holes.length > 0 ? panel.holes : defaultHoles(panel.widthMm);
+    //     const wallHoles = transformAllHoles({
+    //         panelX: panel.xMm,
+    //         panelY: panel.yMm,
+    //         panelW: panel.widthMm,
+    //         panelH: panel.heightMm,
+    //         rotation: panel.rotation,
+    //         holes: holeList,
+    //     });
+
+    //     for (const wh of wallHoles) {
+    //         if (!pointInRect({ x: wh.wallX, y: wh.wallY }, tRect)) continue;
+    //         const hp = toPt(wh.wallX, wh.wallY);
+    //         drawCross(page, hp.x, hp.y, mmToPt(HOLE_CROSS_SIZE_MM), COL_HOLE_CROSS);
+
+    //         // Small circle around the cross
+    //         page.drawCircle({
+    //             x: hp.x, y: hp.y,
+    //             size: mmToPt(HOLE_CROSS_SIZE_MM + 1),
+    //             borderColor: COL_HOLE_CROSS, borderWidth: 0.5,
+    //             color: rgb(1, 1, 1),
+    //             opacity: 0,
+    //             borderOpacity: 0.7,
+    //         });
+
+    //         // Hole label
+    //         if (wh.label) {
+    //             page.drawText(wh.label, {
+    //                 x: hp.x + mmToPt(5), y: hp.y - mmToPt(2),
+    //                 size: 6, font: fontReg, color: COL_HOLE_CROSS,
+    //             });
+    //         }
+    //     }
+    // }
 
     // ---------------------------------------------------------------------------
     // Wall boundary outline (crop to tile)
