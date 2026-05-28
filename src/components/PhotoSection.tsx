@@ -25,12 +25,24 @@ export function PhotoSection({ jobId, initialPhotos }: Props) {
 
     const handlePhotoDelete = async (photoId: string) => {
         if (!confirm('Remove this photo? Any panels using it will also be removed.')) return;
-        await fetch('/api/upload/presign', {
+        const res = await fetch('/api/upload/presign', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ photoId }),
         });
+
+        if (!res.ok) return;
+
+        const { statusChanged } = await res.json();
+
+        // Remove photo from local state for instant UI feedback
         setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+
+        // If the server changed job status, re-run the Server Component
+        // so the badge, JobActions, and WallEditorIsland key all update
+        if (statusChanged) {
+            router.refresh();
+        }
         router.refresh();
     };
 

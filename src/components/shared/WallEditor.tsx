@@ -19,15 +19,14 @@ interface WallEditorProps {
 // Max display dimensions
 const EDITOR_MAX_W = 1450;
 const EDITOR_MAX_H = 550;
-const TRAY_W = 200;
 
 export default function WallEditor({
-    wallW, 
-    wallH, 
-    photos, 
-    canvasSizes, 
-    initialPanels, 
-    readOnly, 
+    wallW,
+    wallH,
+    photos,
+    canvasSizes,
+    initialPanels,
+    readOnly,
     onSave
 }: WallEditorProps) {
     const svgRef = useRef<SVGSVGElement>(null);
@@ -40,10 +39,23 @@ export default function WallEditor({
     const displayH = wallH * scale;
 
     const {
-        panels, trayPhotos, selectedId, selectedPanel,
-        setSelectedId, saving, canUndo, canRedo,
-        undo, redo, addPanel, movePanel, rotatePanel,
-        changePanelSize, swapPhoto, removePanel,
+        panels,
+        trayPhotos,
+        selectedId,
+        selectedPanel,
+        setSelectedId,
+        saving,
+        canUndo,
+        canRedo,
+        undo,
+        redo,
+        addPanel,
+        movePanelDirect,
+        commitPanelMove,
+        rotatePanel,
+        changePanelSize,
+        swapPhoto,
+        removePanel,
     } = useWallEditor({ initialPanels, photos, canvasSizes, wallW, wallH, readOnly, onSave });
 
     // Convert SVG client coords to wall mm
@@ -67,36 +79,42 @@ export default function WallEditor({
         setSelectedId(panelId);
     }, [readOnly, panels, svgToMm, setSelectedId]);
 
+    // onSvgMouseMove — use movePanelDirect (smooth, no snapshot)
     const onSvgMouseMove = useCallback((e: React.MouseEvent) => {
         if (activeDragPanel) {
             const mm = svgToMm(e.clientX, e.clientY);
-            movePanel(activeDragPanel.id, mm.x - activeDragPanel.offsetX, mm.y - activeDragPanel.offsetY);
+            movePanelDirect(
+                activeDragPanel.id,
+                mm.x - activeDragPanel.offsetX,
+                mm.y - activeDragPanel.offsetY
+            );
         }
         if (draggingTrayPhoto) {
             setDragPos({ x: e.clientX, y: e.clientY });
         }
-    }, [activeDragPanel, draggingTrayPhoto, svgToMm, movePanel]);
+    }, [activeDragPanel, draggingTrayPhoto, svgToMm, movePanelDirect]);
 
+    // onSvgMouseUp — commit on release (snaps + saves once)
     const onSvgMouseUp = useCallback((e: React.MouseEvent) => {
+        if (activeDragPanel) {
+            commitPanelMove(activeDragPanel.id);  // ← snap + save here, once
+            setActiveDragPanel(null);
+        }
         if (draggingTrayPhoto) {
             const mm = svgToMm(e.clientX, e.clientY);
             if (mm.x >= 0 && mm.x <= wallW && mm.y >= 0 && mm.y <= wallH) {
-                // Check if dropping on existing panel → swap photo
                 const target = panels.find((p) =>
                     mm.x >= p.xMm && mm.x <= p.xMm + p.displayW &&
                     mm.y >= p.yMm && mm.y <= p.yMm + p.displayH
                 );
-                if (target) {
-                    swapPhoto(target.id, draggingTrayPhoto);
-                } else {
-                    addPanel(draggingTrayPhoto, mm.x, mm.y);
-                }
+                if (target) swapPhoto(target.id, draggingTrayPhoto);
+                else addPanel(draggingTrayPhoto, mm.x, mm.y);
             }
             setDraggingTrayPhoto(null);
             setDragPos(null);
         }
-        setActiveDragPanel(null);
-    }, [draggingTrayPhoto, panels, wallW, wallH, svgToMm, swapPhoto, addPanel]);
+    }, [activeDragPanel, commitPanelMove, draggingTrayPhoto, panels,
+        wallW, wallH, svgToMm, swapPhoto, addPanel]);
 
     const onSvgClick = useCallback((e: React.MouseEvent) => {
         if ((e.target as SVGElement).tagName === 'svg') setSelectedId(null);

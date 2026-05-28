@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { STATUS_LABELS, type JobStatus } from '@/types';
+import { type JobStatus } from '@/types';
 import Navbar from '@/components/shared/Navbar';
 import JobStatusBadge from '@/components/shared/JobStatusBadge';
 

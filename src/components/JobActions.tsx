@@ -6,16 +6,26 @@ import { Button } from './ui/button';
 
 interface Props {
     jobId: string;
+    isDraft: boolean;
     isProofing: boolean;
     isApprovedOrLater: boolean;
     canSubmit: boolean;
 }
 
-const JobActions = ({ jobId, isProofing, isApprovedOrLater, canSubmit }: Props) => {
+const JobActions = ({ jobId, isDraft, isProofing, isApprovedOrLater, canSubmit }: Props) => {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [approving, setApproving] = useState(false);
     const [requesting, setRequesting] = useState(false);
+
+    // Add this handler alongside the other handlers
+    const handleDeleteJob = async () => {
+        if (!confirm(`Are you sure you want to delete this job? This cannot be undone.`)) return;
+        const res = await fetch(`/api/jobs/${jobId}`, { method: 'DELETE' });
+        if (res.ok) {
+            router.push('/dashboard');
+        }
+    };
 
     const handleTransition = async (status: string) => {
 
@@ -35,6 +45,11 @@ const JobActions = ({ jobId, isProofing, isApprovedOrLater, canSubmit }: Props) 
 
     return (
         <div className="flex items-center gap-2 flex-wrap">
+            {isDraft && (
+                <Button size="sm" variant="danger" onClick={handleDeleteJob}>
+                    Delete job
+                </Button>
+            )}
             {(isProofing || isApprovedOrLater) && (
                 <>
                     <Button size="sm" variant="outline" onClick={() => downloadPdf('template')}>
