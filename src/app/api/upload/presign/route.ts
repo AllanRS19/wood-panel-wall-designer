@@ -81,6 +81,12 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // remainingAfterDelete = current total photos minus the one being removed from the list
+    const totalPhotos = await prisma.photo.count({
+        where: { jobId: photo.jobId },
+    });
+    const remainingAfterDelete = totalPhotos - 1;
+
     // Remove panels using this photo
     await prisma.panel.deleteMany({ where: { photoId } });
     // Delete from S3
@@ -88,7 +94,31 @@ export async function DELETE(req: NextRequest) {
     // Delete record
     await prisma.photo.delete({ where: { id: photoId } });
 
-    return NextResponse.json({ success: true });
+    let statusChanged = false;
+
+    if (remainingAfterDelete === 0) {
+        await prisma.job.update({
+            where: { id: photo.jobId },
+            data: { status: 'DRAFT' },
+        });
+        statusChanged = true;
+
+    } else if (photo.job.status === 'ARRANGING') {
+        // Photos still exist — check if any panels remain on the wall
+        const remainingPanels = await prisma.panel.count({
+            where: { jobId: photo.jobId },
+        });
+        if (remainingPanels === 0) {
+            // Wall is now empty but photos exist → back to UPLOADED
+            await prisma.job.update({
+                where: { id: photo.jobId },
+                data: { status: 'UPLOADED' },
+            });
+            statusChanged = true;
+        }
+    }
+
+    return NextResponse.json({ success: true, remainingPhotos: remainingAfterDelete, statusChanged });
 }
 
 // POST /api/upload/presign/signup (auth signup)

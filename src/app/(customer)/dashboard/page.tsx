@@ -5,9 +5,9 @@ import Link from 'next/link';
 import Navbar from '@/components/shared/Navbar';
 import { Button } from '@/components/ui/button';
 import JobStatusBadge from '@/components/shared/JobStatusBadge';
-import { JobStatus } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { JobStatus } from '@/types';
 
 interface Job {
     id: string;

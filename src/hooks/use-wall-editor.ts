@@ -178,6 +178,40 @@ export function useWallEditor({
         [readOnly, wallW, wallH, mutatePanels]
     );
 
+    // Add movePanelDirect — this is called during drag (no snapshot, no save)
+    const movePanelDirect = useCallback(
+        (panelId: string, xMm: number, yMm: number) => {
+            if (readOnly) return;
+            setPanels((prev) =>
+                prev.map((p) => {
+                    if (p.id !== panelId) return p;
+                    // Clamp to wall bounds but do NOT snap — smooth visual during drag
+                    const clampedX = Math.max(0, Math.min(xMm, wallW - p.displayW));
+                    const clampedY = Math.max(0, Math.min(yMm, wallH - p.displayH));
+                    return { ...p, xMm: clampedX, yMm: clampedY };
+                })
+            );
+        },
+        [readOnly, wallW, wallH]
+    );
+
+    const commitPanelMove = useCallback(
+        (panelId: string) => {
+            if (readOnly) return;
+            mutatePanels((prev) =>
+                prev.map((p) => {
+                    if (p.id !== panelId) return p;
+                    return {
+                        ...p,
+                        xMm: Math.max(0, Math.min(snapToGrid(p.xMm), wallW - p.displayW)),
+                        yMm: Math.max(0, Math.min(snapToGrid(p.yMm), wallH - p.displayH)),
+                    };
+                })
+            );
+        },
+        [readOnly, wallW, wallH, mutatePanels]
+    );
+
     // ---- Rotate panel ----
     const rotatePanel = useCallback(
         (panelId: string) => {
@@ -260,6 +294,8 @@ export function useWallEditor({
         redo,
         addPanel,
         movePanel,
+        movePanelDirect,
+        commitPanelMove,
         rotatePanel,
         changePanelSize,
         swapPhoto,

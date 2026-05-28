@@ -93,16 +93,26 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
             }),
         ]);
 
+        let statusChanged = false;
+
         // Advance status to ARRANGING if still UPLOADED
-        if (job.status === 'UPLOADED') {
+        if (job.status === 'UPLOADED' && panels.length > 0) {
             await prisma.job.update({ where: { id: id }, data: { status: 'ARRANGING' } });
+            statusChanged = true;
+        }
+
+        // Revert to UPLOADED if all panels removed but photos still exist
+        if (job.status === 'ARRANGING' && panels.length === 0) {
+            await prisma.job.update({ where: { id: id }, data: { status: 'UPLOADED' } });
+            statusChanged = true;
         }
 
         const result = await prisma.panel.findMany({
             where: { jobId: id },
             include: { photo: true, canvasSize: { include: { holes: true } } },
         });
-        return NextResponse.json(result);
+
+        return NextResponse.json({ panels: result, statusChanged });
     }
 
     // Single panel create
