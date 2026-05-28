@@ -29,8 +29,6 @@ const JobActions = ({ jobId, isDraft, isProofing, isApprovedOrLater, canSubmit }
 
     const handleTransition = async (status: string) => {
 
-        console.log("Change the status to approve");
-
         await fetch(`/api/jobs/${jobId}/status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -40,6 +38,7 @@ const JobActions = ({ jobId, isDraft, isProofing, isApprovedOrLater, canSubmit }
     };
 
     const downloadPdf = (type: 'template' | 'reference') => {
+        console.log('Clicked on the button');
         window.open(`/api/jobs/${jobId}/pdf?type=${type}`, '_blank');
     };
 
