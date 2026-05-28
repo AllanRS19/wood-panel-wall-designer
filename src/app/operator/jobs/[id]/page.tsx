@@ -80,14 +80,20 @@ export default function OperatorJobPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-wrap">
-                        <Button size="sm" variant="outline" onClick={() => window.open(`/api/jobs/${id}/pdf?type=template`, '_blank')}>
+                        <Button size="sm" variant="outline" onClick={() => {
+                            location.href = `/api/jobs/${id}/pdf?type=template`;
+                        }}>
                             ⬇ Template PDF
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => window.open(`/api/jobs/${id}/pdf?type=reference`, '_blank')}>
+                        <Button size="sm" variant="outline" onClick={() => {
+                            location.href = `/api/jobs/${id}/pdf?type=reference`;
+                        }}>
                             ⬇ Reference PDF
                         </Button>
                         {canDownloadExport && (
-                            <Button size="sm" variant="outline" onClick={() => window.open(`/api/jobs/${id}/export`, '_blank')}>
+                            <Button size="sm" variant="outline" onClick={() => {
+                                location.href = `/api/jobs/${id}/export`;
+                            }}>
                                 ⬇ Print-Master ZIP
                             </Button>
                         )}
