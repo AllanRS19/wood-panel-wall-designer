@@ -1,5 +1,5 @@
-import prisma from '@/lib/db';
 import { Role } from '@/app/generated/prisma/enums';
+import prisma from '@/lib/db/prisma';
 import bcrypt from 'bcryptjs';
 
 async function main() {
