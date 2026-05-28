@@ -1,18 +1,4 @@
-/**
- * pdf.ts — PDF generation for the Wood Panel Wall Designer.
- *
- * TWO OUTPUTS:
- *   1. 1:1 tiled hanging template — multi-page, prints at 100%, customer tapes and drills.
- *   2. Scaled reference sheet — single A4/A3 overview with drill-point table.
- *
- * ACCURACY REQUIREMENT: ±2 mm across a 2 m span when printed at 100%.
- *
- * All internal dimensions are in millimetres.
- * PDF coordinates use pdf-lib points (1pt = 1/72 inch).
- * The MM_TO_PT constant converts mm → pt.
- */
-
-import { PDFDocument, PDFPage, rgb, StandardFonts, degrees } from 'pdf-lib';
+import { PDFDocument, PDFPage, rgb, StandardFonts } from 'pdf-lib';
 import {
     MM_TO_PT,
     transformAllHoles,
@@ -25,7 +11,6 @@ import {
     rectIntersects,
     pointInRect,
     type HoleInMm,
-    type WallHole,
     type PaperSizeKey,
 } from './geometry';
 

@@ -12,7 +12,6 @@ const Navbar = () => {
         <nav className="bg-white border-b border-gray-200 px-4 md:px-8 py-3 flex items-center justify-between">
             <div className="flex items-center gap-6">
                 <Link href={isOperator ? '/operator/pipeline' : '/dashboard'} className="flex items-center gap-2">
-                    <span className="text-2xl">🪵</span>
                     <span className="font-bold text-gray-900 hidden sm:block">Wood Panel Designer</span>
                 </Link>
                 {isOperator && (

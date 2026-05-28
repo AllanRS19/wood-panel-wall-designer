@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         data: {
             email: email.toLowerCase(),
             passwordHash: hash,
-            name: name || null,
+            name,
             role,
         },
         select: { id: true, email: true, name: true, role: true },

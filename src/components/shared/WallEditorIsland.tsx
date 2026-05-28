@@ -1,4 +1,3 @@
-// components/WallEditorIsland.tsx
 'use client';
 
 import { useCallback } from 'react';

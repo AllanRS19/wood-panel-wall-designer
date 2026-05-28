@@ -44,13 +44,13 @@ const SignUp = () => {
         <div className="min-h-screen bg-brand-50 flex items-center justify-center px-4">
             <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
                 <div className="text-center mb-8">
-                    <div className="text-5xl mb-3">🪵</div>
                     <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
                     <p className="text-gray-500 mt-1">Design your perfect wall</p>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <Input
-                        label="Name (optional)"
+                        label="Name"
+                        required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         autoComplete="name"
@@ -86,7 +86,7 @@ const SignUp = () => {
                 </form>
                 <p className="text-center text-sm text-gray-500 mt-6">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-brand-600 font-medium hover:underline">Sign in</Link>
+                    <Link href="/sign-in" className="text-brand-600 font-medium hover:underline">Sign in</Link>
                 </p>
             </div>
         </div>

@@ -40,7 +40,6 @@ const SignIn = () => {
         <div className="min-h-screen bg-brand-50 flex items-center justify-center px-4">
             <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
                 <div className="text-center mb-8">
-                    <div className="text-5xl mb-3">🪵</div>
                     <h1 className="text-2xl font-bold text-gray-900">Wood Panel Designer</h1>
                     <p className="text-gray-500 mt-1">Sign in to your account</p>
                 </div>
