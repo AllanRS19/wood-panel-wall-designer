@@ -46,10 +46,14 @@ const JobActions = ({ jobId, isDraft, isProofing, isApprovedOrLater, canSubmit }
             )}
             {(isProofing || isApprovedOrLater) && (
                 <>
-                    <Button size="sm" variant="outline" onClick={() => window.open(`/api/jobs/${jobId}/pdf?type=template`, '_blank')}>
+                    <Button size="sm" variant="outline" onClick={() => {
+                        location.href = `/api/jobs/${jobId}/pdf?type=template`;
+                    }}>
                         ⬇ Hanging Template PDF
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => window.open(`/api/jobs/${jobId}/pdf?type=reference`, '_blank')}>
+                    <Button size="sm" variant="outline" onClick={() => {
+                        location.href = `/api/jobs/${jobId}/pdf?type=reference`;
+                    }}>
                         ⬇ Reference Sheet PDF
                     </Button>
                 </>
