@@ -72,7 +72,7 @@ const SignUp = () => {
                         hint="At least 8 characters"
                     />
                     {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-3 py-2">{error}</div>}
-                    <Button type="submit" className="w-full" size="lg" loading={loading}>
+                    <Button type="submit" className="w-full cursor-pointer" size="lg" loading={loading}>
                         Create Account
                     </Button>
                 </form>
