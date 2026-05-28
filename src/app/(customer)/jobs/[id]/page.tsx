@@ -139,7 +139,6 @@ const CustomerJobPage = async ({ params }: Props) => {
 
                 {job.photos.length === 0 && isEditable && (
                     <div className="text-center py-12 text-gray-400">
-                        <p className="text-4xl mb-3">⬆️</p>
                         <p className="text-lg font-medium">Upload photos to start designing</p>
                     </div>
                 )}

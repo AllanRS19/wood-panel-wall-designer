@@ -127,7 +127,6 @@ const PhotoUpload = ({ jobId, onUploaded, disabled }: Props) => {
                     disabled ? 'opacity-50 cursor-not-allowed' : '',
                 ].join(' ')}
             >
-                <div className="text-3xl mb-2">📷</div>
                 <p className="text-sm font-medium text-gray-700">
                     Drop photos here or <span className="text-brand-600 underline">browse</span>
                 </p>

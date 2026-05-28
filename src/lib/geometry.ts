@@ -1,13 +1,3 @@
-/**
- * geometry.ts — All measurements in millimetres.
- *
- * This module is the heart of dimensional accuracy.
- * It maps panel-local hole coordinates through panel rotation
- * to wall coordinates, and from wall coordinates to PDF page coordinates.
- *
- * There are no pixels or percentages here.
- */
-
 export const MM_TO_PT = 72 / 25.4; // 2.834645669… points per mm (exact)
 
 // ---------------------------------------------------------------------------
